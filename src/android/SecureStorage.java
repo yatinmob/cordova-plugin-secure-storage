@@ -80,7 +80,7 @@ public class SecureStorage extends CordovaPlugin {
             String packageName = options.optString("packageName", getContext().getPackageName());
 
             Context ctx = null;
-            
+
             // Solves #151. By default, we use our own ApplicationContext
             // If packageName is provided, we try to get the Context of another Application with that packageName
             try {
@@ -96,8 +96,15 @@ public class SecureStorage extends CordovaPlugin {
             String alias = service2alias(service);
             INIT_SERVICE = service;
 
+            try {
+                RSA.createKeyPair(ctx, alias);
+            } catch (Exception e) {
+                Log.e(TAG, "Fail to create KeyPair :", e);
+            }
+
             SharedPreferencesHandler PREFS = new SharedPreferencesHandler(alias, ctx);
             SERVICE_STORAGE.put(service, PREFS);
+
 
             if (!isDeviceSecure()) {
                 Log.e(TAG, MSG_DEVICE_NOT_SECURE);

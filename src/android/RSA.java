@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.util.Calendar;
 
 import javax.crypto.Cipher;
@@ -32,15 +33,15 @@ public class RSA {
         notAfter.add(Calendar.YEAR, 100);
         String principalString = String.format("CN=%s, OU=%s", alias, ctx.getPackageName());
         KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(ctx)
-            .setAlias(alias)
-            .setSubject(new X500Principal(principalString))
-            .setSerialNumber(BigInteger.ONE)
-            .setStartDate(notBefore.getTime())
-            .setEndDate(notAfter.getTime())
-            .setEncryptionRequired()
-            .setKeySize(2048)
-            .setKeyType("RSA")
-            .build();
+                .setAlias(alias)
+                .setSubject(new X500Principal(principalString))
+                .setSerialNumber(BigInteger.ONE)
+                .setStartDate(notBefore.getTime())
+                .setEndDate(notAfter.getTime())
+                .setEncryptionRequired()
+                .setKeySize(2048)
+                .setKeyType("RSA")
+                .build();
         KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance("RSA", KEYSTORE_PROVIDER);
         kpGenerator.initialize(spec);
         kpGenerator.generateKeyPair();
@@ -64,11 +65,12 @@ public class RSA {
 
     private static Key loadKey(int cipherMode, String alias) throws Exception {
         KeyStore keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER);
-        keyStore.load(null, null);
+        keyStore.load(null);
         Key key;
         switch (cipherMode) {
             case Cipher.ENCRYPT_MODE:
-                key = keyStore.getCertificate(alias).getPublicKey();
+                Certificate certificate = keyStore.getCertificate(alias);
+                key = certificate.getPublicKey();
                 if (key == null) {
                     throw new Exception("Failed to load the public key for " + alias);
                 }
